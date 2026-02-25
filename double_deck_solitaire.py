@@ -21,7 +21,7 @@ class Game:
 
         # Piles and foundations
         self.piles = {label: [] for label in PILE_LABELS}
-        self.foundations = {s+"_up": [], s+"_down": [] for s in SUITS}
+        self.foundations = {f"{s}{direction}": [] for s in SUITS for direction in ("_up", "_down")}
         self.draw_pile = []
         self.active_pile = None
 
