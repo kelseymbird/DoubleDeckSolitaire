@@ -71,7 +71,7 @@ class Game:
             return set()
         playable = {0}
         if label == self.active_pile:
-            playable.add(len(pile) - 1)
+            playable = set(range(len(pile)))
         return playable
 
     def render_piles(self):
