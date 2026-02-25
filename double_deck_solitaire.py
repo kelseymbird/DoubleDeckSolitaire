@@ -49,6 +49,11 @@ class Game:
             for label in PILE_LABELS:
                 if not self.deck: break
                 card = self.deck.pop(0)
+                if label == "DRAW":
+                    # Cards dealt to the DRAW label go directly into the draw pile.
+                    self.draw_pile.append(card)
+                    continue
+
                 self.piles[label].append(card)
 
                 # Extra rules for DRAW pile
@@ -72,7 +77,7 @@ class Game:
             tk.Label(frame, text=label).pack()
             for idx, card in enumerate(self.piles[label]):
                 btn = tk.Button(frame, text=str(card), width=6, command=lambda l=label, i=idx: self.play_card(l,i))
-                if label != self.active_pile and idx != len(self.piles[label])-1:
+                if idx != 0:
                     btn.config(state="disabled")
                 btn.pack()
             self.pile_frames[label] = frame
@@ -134,7 +139,7 @@ class Game:
 
     def check_game_end(self):
         all_complete = all(len(self.foundations[s+"_up"])==13 and len(self.foundations[s+"_down"])==13 for s in SUITS)
-        no_moves = all(all(not self.can_move_to_foundation(card) for card in pile) for pile in self.piles.values())
+        no_moves = all((not pile) or (not self.can_move_to_foundation(pile[0])) for pile in self.piles.values())
         if all_complete:
             messagebox.showinfo("You Win!","Congratulations! All foundations complete!")
         elif no_moves and not self.draw_pile:
