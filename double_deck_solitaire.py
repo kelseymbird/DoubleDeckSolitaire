@@ -5,7 +5,8 @@ import random
 # ----- Card and Game Logic -----
 SUITS = ["♠","♥","♦","♣"]
 RANKS = ["A","2","3","4","5","6","7","8","9","10","J","Q","K"]
-PILE_LABELS = ["A","2","3","4","5","6","7","8","9","10","DRAW","J","Q","K"]
+PILE_LABELS = ["A","2","3","4","5","6","7","8","9","10","J","Q","K"]
+DEAL_LABELS = ["A","2","3","4","5","6","7","8","9","10","DRAW","J","Q","K"]
 
 class Card:
     def __init__(self, suit, rank):
@@ -28,8 +29,6 @@ class Game:
         # GUI containers
         self.pile_frames = {}
         self.foundation_frames = {}
-        self.draw_button = tk.Button(root, text="Draw from DRAW Pile", command=self.draw_from_draw)
-        self.draw_button.pack(pady=10)
         self.board_frame = tk.Frame(root)
         self.board_frame.pack()
         self.found_frame = tk.Frame(root)
@@ -46,7 +45,7 @@ class Game:
 
     def deal(self):
         while self.deck:
-            for label in PILE_LABELS:
+            for label in DEAL_LABELS:
                 if not self.deck: break
                 card = self.deck.pop(0)
                 if label == "DRAW":
@@ -79,15 +78,22 @@ class Game:
             frame.destroy()
         self.pile_frames = {}
 
-        for i, label in enumerate(PILE_LABELS):
+        for i, label in enumerate(DEAL_LABELS):
             frame = tk.Frame(self.board_frame, bd=2, relief="ridge")
             frame.grid(row=i//7, column=i%7, padx=5, pady=5)
             tk.Label(frame, text=label).pack()
+
+            if label == "DRAW":
+                tk.Button(frame, text=f"Click to Draw ({len(self.draw_pile)})", width=14, command=self.draw_from_draw).pack(pady=6)
+                self.pile_frames[label] = frame
+                continue
+
             playable_indices = self.get_playable_indices(label)
             if not self.piles[label]:
                 tk.Label(frame, text="(empty)", fg="gray").pack()
             for idx, card in enumerate(self.piles[label]):
                 btn = tk.Button(frame, text=str(card), width=6, command=lambda l=label, i=idx: self.play_card(l,i))
+                if idx not in playable_indices:
                 if idx != 0:
                     btn.config(state="disabled")
                 btn.pack()
@@ -118,6 +124,10 @@ class Game:
         self.render_piles()
 
     def play_card(self, pile_label, idx):
+        if idx not in self.get_playable_indices(pile_label):
+            messagebox.showinfo("Invalid Move", "That card is not currently playable.")
+            return
+
         card = self.piles[pile_label][idx]
         if self.can_move_to_foundation(card):
             self.move_to_foundation(card)
@@ -150,7 +160,11 @@ class Game:
 
     def check_game_end(self):
         all_complete = all(len(self.foundations[s+"_up"])==13 and len(self.foundations[s+"_down"])==13 for s in SUITS)
-        no_moves = all((not pile) or (not self.can_move_to_foundation(pile[0])) for pile in self.piles.values())
+        no_moves = all(
+            all(not self.can_move_to_foundation(self.piles[label][idx]) for idx in self.get_playable_indices(label))
+            for label in self.piles
+        )
+        
         if all_complete:
             messagebox.showinfo("You Win!","Congratulations! All foundations complete!")
         elif no_moves and not self.draw_pile:
