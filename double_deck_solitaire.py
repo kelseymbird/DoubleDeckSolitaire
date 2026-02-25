@@ -69,9 +69,10 @@ class Game:
         pile = self.piles[label]
         if not pile:
             return set()
+        playable = {0}
         if label == self.active_pile:
-            return set(range(len(pile)))
-        return {0}
+            playable.add(len(pile) - 1)
+        return playable
 
     def render_piles(self):
         for frame in self.pile_frames.values():
@@ -119,7 +120,7 @@ class Game:
             return
         card = self.draw_pile.pop()
         self.active_pile = card.rank
-        self.piles[self.active_pile].insert(0, card)
+        self.piles[self.active_pile].append(card)
         self.render_piles()
 
     def play_card(self, pile_label, idx):
