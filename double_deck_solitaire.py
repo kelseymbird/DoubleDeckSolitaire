@@ -94,6 +94,7 @@ class Game:
             for idx, card in enumerate(self.piles[label]):
                 btn = tk.Button(frame, text=str(card), width=6, command=lambda l=label, i=idx: self.play_card(l,i))
                 if idx not in playable_indices:
+                if idx != 0:
                     btn.config(state="disabled")
                 btn.pack()
             self.pile_frames[label] = frame
@@ -163,6 +164,7 @@ class Game:
             all(not self.can_move_to_foundation(self.piles[label][idx]) for idx in self.get_playable_indices(label))
             for label in self.piles
         )
+        
         if all_complete:
             messagebox.showinfo("You Win!","Congratulations! All foundations complete!")
         elif no_moves and not self.draw_pile:
