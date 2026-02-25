@@ -71,7 +71,7 @@ class Game:
             return set()
         if label == self.active_pile:
             return set(range(len(pile)))
-        return {0}
+        return {len(pile) - 1}
 
     def render_piles(self):
         for frame in self.pile_frames.values():
@@ -94,7 +94,6 @@ class Game:
             for idx, card in enumerate(self.piles[label]):
                 btn = tk.Button(frame, text=str(card), width=6, command=lambda l=label, i=idx: self.play_card(l,i))
                 if idx not in playable_indices:
-                if idx != 0:
                     btn.config(state="disabled")
                 btn.pack()
             self.pile_frames[label] = frame
