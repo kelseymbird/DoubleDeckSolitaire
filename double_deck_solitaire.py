@@ -66,6 +66,14 @@ class Game:
                     self.draw_pile.append(self.deck.pop(0))
 
     # ----- GUI Rendering -----
+    def get_playable_indices(self, label):
+        pile = self.piles[label]
+        if not pile:
+            return set()
+        if label == self.active_pile:
+            return set(range(len(pile)))
+        return {0}
+
     def render_piles(self):
         for frame in self.pile_frames.values():
             frame.destroy()
@@ -75,6 +83,9 @@ class Game:
             frame = tk.Frame(self.board_frame, bd=2, relief="ridge")
             frame.grid(row=i//7, column=i%7, padx=5, pady=5)
             tk.Label(frame, text=label).pack()
+            playable_indices = self.get_playable_indices(label)
+            if not self.piles[label]:
+                tk.Label(frame, text="(empty)", fg="gray").pack()
             for idx, card in enumerate(self.piles[label]):
                 btn = tk.Button(frame, text=str(card), width=6, command=lambda l=label, i=idx: self.play_card(l,i))
                 if idx != 0:
